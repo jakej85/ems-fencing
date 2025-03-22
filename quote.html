@@ -1,121 +1,517 @@
-// Add this to the script section of your quote.html file
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EMS Fencing - Quote</title>
+  <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+  <div class="max-w-md mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <h1 class="text-2xl font-bold text-gray-900">EMS Fencing</h1>
+      <p class="text-gray-600">Mobile Quote System</p>
+    </div>
 
-// Parse URL parameters
-function getUrlParams() {
-  const params = {};
-  const queryString = window.location.search.substring(1);
-  const pairs = queryString.split('&');
-  
-  for (const pair of pairs) {
-    const [key, value] = pair.split('=');
-    params[decodeURIComponent(key)] = decodeURIComponent(value || '');
-  }
-  
-  return params;
-}
+    <!-- Quote Form -->
+    <div id="quoteForm" class="bg-white shadow rounded-lg p-6">
+      <h2 class="text-lg font-medium text-gray-900 mb-4">Create Quote</h2>
+      
+      <!-- Client Details -->
+      <div class="space-y-4 mb-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Client Name</label>
+          <input type="text" id="clientName" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Phone Number</label>
+          <input type="tel" id="phoneNumber" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Address</label>
+          <input type="text" id="address" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Email</label>
+          <input type="email" id="email" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+        </div>
+      </div>
 
-// Check if we're opening an existing quote
-document.addEventListener('DOMContentLoaded', function() {
-  const params = getUrlParams();
-  
-  if (params.id) {
-    // We're opening an existing quote
-    const quoteData = JSON.parse(localStorage.getItem('quoteData') || '{}');
-    
-    if (quoteData.quoteNumber) {
-      // Fill form with quote data
-      document.getElementById('clientName').value = quoteData.clientName || '';
-      document.getElementById('phoneNumber').value = quoteData.phoneNumber || '';
-      document.getElementById('address').value = quoteData.address || '';
-      document.getElementById('email').value = quoteData.email || '';
-      document.getElementById('length').value = quoteData.length || '';
-      document.getElementById('fenceType').value = quoteData.fenceType || '';
+      <!-- Fence Details -->
+      <div class="space-y-4 mb-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Length (meters)</label>
+          <input type="number" id="length" step="0.1" min="0" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Fence Type</label>
+          <select id="fenceType" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            <option value="">Select fence type...</option>
+            <option value="Treated Pine Fence">Treated Pine Fence - $110 per meter</option>
+            <option value="Colorbond Fence">Colorbond Fence - $145 per meter</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Additional Options -->
+      <div class="space-y-4 mb-6">
+        <div class="space-y-2">
+          <div class="flex items-center">
+            <input type="checkbox" id="demoRemoval" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+            <label class="ml-2 block text-sm text-gray-700">Demolition & Removal - $45 per meter</label>
+          </div>
+         
+          <div class="flex items-center">
+            <input type="checkbox" id="split" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+            <label class="ml-2 block text-sm text-gray-700">Split cost with neighbor (50%)</label>
+          </div>
+         
+          <div class="flex items-center mt-4">
+            <input type="checkbox" id="concreteCutting" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+            <label class="ml-2 block text-sm text-gray-700">Concrete cutting required</label>
+          </div>
+         
+          <div id="concreteCutsContainer" class="pl-6 mt-2 hidden">
+            <label class="block text-sm font-medium text-gray-700">Number of cuts ($25 each)</label>
+            <input type="number" id="concreteCuts" min="1" value="1" class="mt-1 block w-48 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+          </div>
+        </div>
+      </div>
+
+      <!-- Price Preview -->
+      <div class="mt-6 bg-gray-50 p-4 rounded-md">
+        <h4 class="text-sm font-medium text-gray-900">Price Summary</h4>
+        <div class="mt-2 space-y-1">
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-500">Fence Cost:</span>
+            <span id="fenceCost" class="text-gray-900">$0.00</span>
+          </div>
+          <div id="demoRemovalRow" class="flex justify-between text-sm hidden">
+            <span class="text-gray-500">Demolition & Removal:</span>
+            <span id="demoRemovalCost" class="text-gray-900">$0.00</span>
+          </div>
+          <div id="concreteCuttingRow" class="flex justify-between text-sm hidden">
+            <span class="text-gray-500">Concrete Cutting:</span>
+            <span id="concreteCost" class="text-gray-900">$0.00</span>
+          </div>
+         
+          <div class="pt-2 flex justify-between text-sm font-medium border-t border-gray-200">
+            <span class="text-gray-900">Subtotal (ex. GST):</span>
+            <span id="totalCost" class="text-gray-900">$0.00</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-500">GST (10%):</span>
+            <span id="gstAmount" class="text-gray-900">$0.00</span>
+          </div>
+          <div class="pt-1 flex justify-between text-sm font-medium">
+            <span class="text-gray-900">Total (inc. GST):</span>
+            <span id="totalCostGst" class="text-gray-900">$0.00</span>
+          </div>
+          <div id="splitCostRow" class="mt-2 flex-col bg-green-50 p-2 rounded text-sm text-green-700 hidden">
+            <div class="flex justify-between">
+              <span>Your Share (50%) ex. GST:</span>
+              <span id="splitAmount" class="font-medium">$0.00</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Your Share (50%) inc. GST:</span>
+              <span id="splitAmountGst" class="font-medium">$0.00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="mt-6">
+        <button id="generateQuoteBtn" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          Generate Quote
+        </button>
+      </div>
+    </div>
+
+    <!-- Success Panel (initially hidden) -->
+    <div id="successPanel" class="hidden bg-white shadow rounded-lg p-6 mt-6">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-medium text-gray-900">Quote Generated Successfully</h3>
+        <span id="quoteNumber" class="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-sm font-medium"></span>
+      </div>
+     
+      <div class="mb-4">
+        <p class="text-sm text-gray-600 mb-2">Your quote has been created and is ready to review.</p>
+        <div class="flex space-x-3">
+          <a id="viewPdfLink" href="#" target="_blank" class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            View PDF
+          </a>
+          <button id="emailQuoteBtn" class="inline-flex items-center px-3 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            Send to Client
+          </button>
+        </div>
+      </div>
+     
+      <div class="border-t border-gray-200 pt-4">
+        <button id="newQuoteBtn" class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          Create New Quote
+        </button>
+        <button id="backToDashboardBtn" class="ml-2 inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          Back to Dashboard
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white p-5 rounded-lg shadow-lg">
+        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto"></div>
+        <p class="mt-2 text-center">Processing...</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global variables
+    let scriptUrl = 'https://script.google.com/macros/s/AKfycbzU8IYUh__S7Fz2cA2ijYlnHPLt3vPR7bp-v0IQShJGvX2O2Zq8JfIiiFP6KrG0KXuuUQ/exec';
+    let currentQuoteNumber = null;
+    let pdfUrl = null;
+    let quoteFileId = null;
+
+    // Parse URL parameters
+    function getUrlParams() {
+      const params = {};
+      const queryString = window.location.search.substring(1);
+      const pairs = queryString.split('&');
       
-      // Set additional services
-      document.getElementById('demoRemoval').checked = 
-        quoteData.additionalServices && quoteData.additionalServices.demoRemoval;
-      document.getElementById('concreteCutting').checked = 
-        quoteData.additionalServices && quoteData.additionalServices.concreteCutting;
-      
-      if (quoteData.additionalServices && quoteData.additionalServices.concreteCutting) {
-        document.getElementById('concreteCutsContainer').classList.remove('hidden');
-        document.getElementById('concreteCuts').value = 
-          quoteData.additionalServices.concreteCuts || 1;
+      for (const pair of pairs) {
+        const [key, value] = pair.split('=');
+        params[decodeURIComponent(key)] = decodeURIComponent(value || '');
       }
       
-      document.getElementById('split').checked = 
-        quoteData.additionalServices && quoteData.additionalServices.split;
-      
-      // Update price preview
-      updatePricePreview();
+      return params;
     }
-  }
-});
 
-// Also update the generateQuote function to handle updates
-async function generateQuote() {
-  if (!validateForm()) return;
-  
-  showLoading(true);
-  
-  const params = getUrlParams();
-  const isUpdate = !!params.id;
-  
-  const quoteData = {
-    clientName: document.getElementById('clientName').value,
-    phoneNumber: document.getElementById('phoneNumber').value,
-    address: document.getElementById('address').value,
-    email: document.getElementById('email').value,
-    length: document.getElementById('length').value,
-    fenceType: document.getElementById('fenceType').value,
-    additionalServices: {
-      demoRemoval: document.getElementById('demoRemoval').checked,
-      concreteCutting: document.getElementById('concreteCutting').checked,
-      concreteCuts: document.getElementById('concreteCutting').checked ? 
-        parseInt(document.getElementById('concreteCuts').value) : 0,
-      split: document.getElementById('split').checked
-    },
-    isNew: !isUpdate,
-    skipEmail: true
-  };
-  
-  // For updates, include the quote number
-  if (isUpdate) {
-    quoteData.quoteNumber = params.id;
-  }
-  
-  try {
-    const response = await fetch(scriptUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'text/plain;charset=utf-8',
-      },
-      body: JSON.stringify({
-        action: 'generateQuote',
-        quoteData: quoteData
-      })
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      // Add change listeners for price updates
+      ['length', 'fenceType', 'demoRemoval', 'concreteCutting', 'concreteCuts', 'split'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.addEventListener('change', updatePricePreview);
+        }
+      });
+     
+      // Show/hide concrete cuts field based on checkbox
+      document.getElementById('concreteCutting').addEventListener('change', function() {
+        document.getElementById('concreteCutsContainer').classList.toggle('hidden', !this.checked);
+        updatePricePreview();
+      });
+      
+      // Generate quote button
+      document.getElementById('generateQuoteBtn').addEventListener('click', generateQuote);
+      
+      // Email quote button
+      document.getElementById('emailQuoteBtn').addEventListener('click', sendQuoteEmail);
+      
+      // New quote button
+      document.getElementById('newQuoteBtn').addEventListener('click', resetForm);
+      
+      // Back to dashboard button
+      document.getElementById('backToDashboardBtn').addEventListener('click', function() {
+        window.location.href = 'dashboard.html';
+      });
+      
+      // Check if we're opening an existing quote
+      const params = getUrlParams();
+      
+      if (params.id) {
+        // We're opening an existing quote
+        const quoteData = JSON.parse(localStorage.getItem('quoteData') || '{}');
+        
+        if (quoteData.quoteNumber) {
+          // Fill form with quote data
+          document.getElementById('clientName').value = quoteData.clientName || '';
+          document.getElementById('phoneNumber').value = quoteData.phoneNumber || '';
+          document.getElementById('address').value = quoteData.address || '';
+          document.getElementById('email').value = quoteData.email || '';
+          document.getElementById('length').value = quoteData.length || '';
+          document.getElementById('fenceType').value = quoteData.fenceType || '';
+          
+          // Set additional services
+          document.getElementById('demoRemoval').checked = 
+            quoteData.additionalServices && quoteData.additionalServices.demoRemoval;
+          document.getElementById('concreteCutting').checked = 
+            quoteData.additionalServices && quoteData.additionalServices.concreteCutting;
+          
+          if (quoteData.additionalServices && quoteData.additionalServices.concreteCutting) {
+            document.getElementById('concreteCutsContainer').classList.remove('hidden');
+            document.getElementById('concreteCuts').value = 
+              quoteData.additionalServices.concreteCuts || 1;
+          }
+          
+          document.getElementById('split').checked = 
+            quoteData.additionalServices && quoteData.additionalServices.split;
+          
+          // Update price preview
+          updatePricePreview();
+        }
+      }
     });
-    
-    const result = await response.json();
-    showLoading(false);
-    
-    if (result.success) {
-      // Show success panel
-      document.getElementById('quoteForm').classList.add('hidden');
-      document.getElementById('successPanel').classList.remove('hidden');
-      
-      // Set quote details
-      currentQuoteNumber = result.quoteNumber;
-      pdfUrl = result.pdfUrl;
-      quoteFileId = result.fileId;
-      
-      document.getElementById('quoteNumber').textContent = `Quote #${result.quoteNumber}`;
-      document.getElementById('viewPdfLink').href = pdfUrl;
-    } else {
-      alert('Error generating quote: ' + result.error);
+
+    // Price preview calculator
+    function updatePricePreview() {
+      const length = parseFloat(document.getElementById('length').value) || 0;
+      const fenceType = document.getElementById('fenceType').value;
+      const demoRemoval = document.getElementById('demoRemoval').checked;
+      const concreteCutting = document.getElementById('concreteCutting').checked;
+      const concreteCuts = concreteCutting ? parseInt(document.getElementById('concreteCuts').value) || 0 : 0;
+      const split = document.getElementById('split').checked;
+     
+      let fenceCost = 0;
+      if (fenceType === 'Treated Pine Fence') {
+        fenceCost = length * 110;
+      } else if (fenceType === 'Colorbond Fence') {
+        fenceCost = length * 145;
+      }
+     
+      let demoRemovalCost = 0;
+      if (demoRemoval) {
+        demoRemovalCost = length * 45;
+      }
+     
+      let concreteCuttingCost = 0;
+      if (concreteCutting) {
+        concreteCuttingCost = concreteCuts * 25;
+      }
+     
+      // Calculate total (excluding GST)
+      let totalCost = fenceCost + demoRemovalCost + concreteCuttingCost;
+     
+      // Apply split if selected
+      if (split) {
+        totalCost = totalCost / 2;
+      }
+     
+      // Calculate GST
+      const gstAmount = totalCost * 0.1;
+     
+      // Calculate total with GST
+      const totalWithGst = totalCost + gstAmount;
+     
+      // Update display
+      document.getElementById('fenceCost').textContent = formatPrice(fenceCost);
+      document.getElementById('demoRemovalCost').textContent = formatPrice(demoRemovalCost);
+      document.getElementById('demoRemovalRow').classList.toggle('hidden', !demoRemoval);
+      document.getElementById('concreteCost').textContent = formatPrice(concreteCuttingCost);
+      document.getElementById('concreteCuttingRow').classList.toggle('hidden', !concreteCutting);
+      document.getElementById('totalCost').textContent = formatPrice(totalCost);
+      document.getElementById('gstAmount').textContent = formatPrice(gstAmount);
+      document.getElementById('totalCostGst').textContent = formatPrice(totalWithGst);
+     
+      // Update split cost display
+      if (split) {
+        document.getElementById('splitAmount').textContent = formatPrice(totalCost);
+        document.getElementById('splitAmountGst').textContent = formatPrice(totalWithGst);
+        document.getElementById('splitCostRow').classList.remove('hidden');
+      } else {
+        document.getElementById('splitCostRow').classList.add('hidden');
+      }
     }
-  } catch (error) {
-    showLoading(false);
-    alert('Error: ' + error);
-  }
-}
+
+    // Format price as currency
+    function formatPrice(amount) {
+      return '$' + Number(amount).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    // Generate quote function
+    async function generateQuote() {
+      if (!validateForm()) return;
+      
+      showLoading(true);
+      
+      const params = getUrlParams();
+      const isUpdate = !!params.id;
+      
+      const quoteData = {
+        clientName: document.getElementById('clientName').value,
+        phoneNumber: document.getElementById('phoneNumber').value,
+        address: document.getElementById('address').value,
+        email: document.getElementById('email').value,
+        length: document.getElementById('length').value,
+        fenceType: document.getElementById('fenceType').value,
+        additionalServices: {
+          demoRemoval: document.getElementById('demoRemoval').checked,
+          concreteCutting: document.getElementById('concreteCutting').checked,
+          concreteCuts: document.getElementById('concreteCutting').checked ? 
+            parseInt(document.getElementById('concreteCuts').value) : 0,
+          split: document.getElementById('split').checked
+        },
+        isNew: !isUpdate,
+        skipEmail: true
+      };
+      
+      // For updates, include the quote number
+      if (isUpdate) {
+        quoteData.quoteNumber = params.id;
+      }
+      
+      try {
+        const response = await fetch(scriptUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8',
+          },
+          body: JSON.stringify({
+            action: 'generateQuote',
+            quoteData: quoteData
+          })
+        });
+        
+        const result = await response.json();
+        showLoading(false);
+        
+        if (result.success) {
+          // Show success panel
+          document.getElementById('quoteForm').classList.add('hidden');
+          document.getElementById('successPanel').classList.remove('hidden');
+          
+          // Set quote details
+          currentQuoteNumber = result.quoteNumber;
+          pdfUrl = result.pdfUrl;
+          quoteFileId = result.fileId;
+          
+          document.getElementById('quoteNumber').textContent = `Quote #${result.quoteNumber}`;
+          document.getElementById('viewPdfLink').href = pdfUrl;
+        } else {
+          alert('Error generating quote: ' + result.error);
+        }
+      } catch (error) {
+        showLoading(false);
+        alert('Error: ' + error);
+      }
+    }
+
+    // Send quote email
+    async function sendQuoteEmail() {
+      if (!currentQuoteNumber || !quoteFileId) {
+        alert('Quote information is missing. Please try generating the quote again.');
+        return;
+      }
+      
+      const emailBtn = document.getElementById('emailQuoteBtn');
+      emailBtn.disabled = true;
+      emailBtn.textContent = 'Sending...';
+      
+      const emailData = {
+        quoteNumber: currentQuoteNumber,
+        fileId: quoteFileId,
+        email: document.getElementById('email').value,
+        clientName: document.getElementById('clientName').value,
+        address: document.getElementById('address').value
+      };
+      
+      try {
+        const response = await fetch(scriptUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8',
+          },
+          body: JSON.stringify({
+            action: 'sendQuoteEmail',
+            emailData: emailData
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          emailBtn.textContent = 'Email Sent ✓';
+          emailBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+          emailBtn.classList.add('bg-gray-400', 'hover:bg-gray-400', 'cursor-not-allowed');
+          alert('Quote has been emailed to the client successfully!');
+        } else {
+          emailBtn.disabled = false;
+          emailBtn.textContent = 'Send to Client';
+          alert('Error sending email: ' + result.error);
+        }
+      } catch (error) {
+        emailBtn.disabled = false;
+        emailBtn.textContent = 'Send to Client';
+        alert('Error: ' + error);
+      }
+    }
+
+    // Reset form for new quote
+    function resetForm() {
+      // Clear all form fields
+      document.getElementById('clientName').value = '';
+      document.getElementById('phoneNumber').value = '';
+      document.getElementById('address').value = '';
+      document.getElementById('email').value = '';
+      document.getElementById('length').value = '';
+      document.getElementById('fenceType').value = '';
+      document.getElementById('demoRemoval').checked = false;
+      document.getElementById('concreteCutting').checked = false;
+      document.getElementById('concreteCuts').value = 1;
+      document.getElementById('concreteCutsContainer').classList.add('hidden');
+      document.getElementById('split').checked = false;
+      
+      // Reset price display
+      updatePricePreview();
+      
+      // Reset state
+      currentQuoteNumber = null;
+      pdfUrl = null;
+      quoteFileId = null;
+      
+      // Show form, hide success panel
+      document.getElementById('quoteForm').classList.remove('hidden');
+      document.getElementById('successPanel').classList.add('hidden');
+    }
+
+    // Validate form inputs
+    function validateForm() {
+      const clientName = document.getElementById('clientName').value;
+      const phoneNumber = document.getElementById('phoneNumber').value;
+      const address = document.getElementById('address').value;
+      const email = document.getElementById('email').value;
+      const length = document.getElementById('length').value;
+      const fenceType = document.getElementById('fenceType').value;
+      
+      if (!clientName) {
+        alert('Please enter client name');
+        return false;
+      }
+      
+      if (!phoneNumber) {
+        alert('Please enter phone number');
+        return false;
+      }
+      
+      if (!address) {
+        alert('Please enter address');
+        return false;
+      }
+      
+      if (!email) {
+        alert('Please enter email address');
+        return false;
+      }
+      
+      if (!length) {
+        alert('Please enter fence length');
+        return false;
+      }
+      
+      if (!fenceType) {
+        alert('Please select fence type');
+        return false;
+      }
+      
+      return true;
+    }
+
+    // Show/hide loading overlay
+    function showLoading(show) {
+      document.getElementById('loadingOverlay').classList.toggle('hidden', !show);
+    }
+  </script>
+</body>
+</html>
