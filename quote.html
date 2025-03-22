@@ -1,0 +1,121 @@
+// Add this to the script section of your quote.html file
+
+// Parse URL parameters
+function getUrlParams() {
+  const params = {};
+  const queryString = window.location.search.substring(1);
+  const pairs = queryString.split('&');
+  
+  for (const pair of pairs) {
+    const [key, value] = pair.split('=');
+    params[decodeURIComponent(key)] = decodeURIComponent(value || '');
+  }
+  
+  return params;
+}
+
+// Check if we're opening an existing quote
+document.addEventListener('DOMContentLoaded', function() {
+  const params = getUrlParams();
+  
+  if (params.id) {
+    // We're opening an existing quote
+    const quoteData = JSON.parse(localStorage.getItem('quoteData') || '{}');
+    
+    if (quoteData.quoteNumber) {
+      // Fill form with quote data
+      document.getElementById('clientName').value = quoteData.clientName || '';
+      document.getElementById('phoneNumber').value = quoteData.phoneNumber || '';
+      document.getElementById('address').value = quoteData.address || '';
+      document.getElementById('email').value = quoteData.email || '';
+      document.getElementById('length').value = quoteData.length || '';
+      document.getElementById('fenceType').value = quoteData.fenceType || '';
+      
+      // Set additional services
+      document.getElementById('demoRemoval').checked = 
+        quoteData.additionalServices && quoteData.additionalServices.demoRemoval;
+      document.getElementById('concreteCutting').checked = 
+        quoteData.additionalServices && quoteData.additionalServices.concreteCutting;
+      
+      if (quoteData.additionalServices && quoteData.additionalServices.concreteCutting) {
+        document.getElementById('concreteCutsContainer').classList.remove('hidden');
+        document.getElementById('concreteCuts').value = 
+          quoteData.additionalServices.concreteCuts || 1;
+      }
+      
+      document.getElementById('split').checked = 
+        quoteData.additionalServices && quoteData.additionalServices.split;
+      
+      // Update price preview
+      updatePricePreview();
+    }
+  }
+});
+
+// Also update the generateQuote function to handle updates
+async function generateQuote() {
+  if (!validateForm()) return;
+  
+  showLoading(true);
+  
+  const params = getUrlParams();
+  const isUpdate = !!params.id;
+  
+  const quoteData = {
+    clientName: document.getElementById('clientName').value,
+    phoneNumber: document.getElementById('phoneNumber').value,
+    address: document.getElementById('address').value,
+    email: document.getElementById('email').value,
+    length: document.getElementById('length').value,
+    fenceType: document.getElementById('fenceType').value,
+    additionalServices: {
+      demoRemoval: document.getElementById('demoRemoval').checked,
+      concreteCutting: document.getElementById('concreteCutting').checked,
+      concreteCuts: document.getElementById('concreteCutting').checked ? 
+        parseInt(document.getElementById('concreteCuts').value) : 0,
+      split: document.getElementById('split').checked
+    },
+    isNew: !isUpdate,
+    skipEmail: true
+  };
+  
+  // For updates, include the quote number
+  if (isUpdate) {
+    quoteData.quoteNumber = params.id;
+  }
+  
+  try {
+    const response = await fetch(scriptUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8',
+      },
+      body: JSON.stringify({
+        action: 'generateQuote',
+        quoteData: quoteData
+      })
+    });
+    
+    const result = await response.json();
+    showLoading(false);
+    
+    if (result.success) {
+      // Show success panel
+      document.getElementById('quoteForm').classList.add('hidden');
+      document.getElementById('successPanel').classList.remove('hidden');
+      
+      // Set quote details
+      currentQuoteNumber = result.quoteNumber;
+      pdfUrl = result.pdfUrl;
+      quoteFileId = result.fileId;
+      
+      document.getElementById('quoteNumber').textContent = `Quote #${result.quoteNumber}`;
+      document.getElementById('viewPdfLink').href = pdfUrl;
+    } else {
+      alert('Error generating quote: ' + result.error);
+    }
+  } catch (error) {
+    showLoading(false);
+    alert('Error: ' + error);
+  }
+}
