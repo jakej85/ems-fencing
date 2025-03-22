@@ -40,13 +40,13 @@
           </h2>
         </div>
         <div class="mt-4 flex md:mt-0 md:ml-4">
-          <button onclick="newQuote()" class="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          <button onclick="newQuoteHandler()" class="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
             New Quote
           </button>
-          <button onclick="fixAllPrices()" class="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+          <button onclick="fixAllPricesHandler()" class="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
             Fix Quote Prices
           </button>
-          <button onclick="runSetup()" class="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+          <button onclick="runSetupHandler()" class="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
             Setup System
           </button>
         </div>
@@ -174,6 +174,17 @@
     </div>
 
     <script>
+      // Demo data for GitHub Pages display
+      const demoQuotes = [
+        {id: '7105', client: '3 Hojan Crt Belmont', date: '08/02/2025', amount: '$540.00', status: 'Pending', invoiced: false},
+        {id: '7108', client: 'Unit 2/6 Hillford St Newcomb', date: '03/02/2025', amount: '$600.00', status: 'Completed', invoiced: false},
+        {id: '6027', client: '47 Ormond Rd', date: '10/11/2023', amount: '$468.75', status: 'Invoiced', invoiced: true},
+        {id: '7201', client: '15 Lakeside Drive', date: '19/03/2025', amount: '$1,245.00', status: 'Pending', invoiced: false},
+        {id: '7202', client: '28 Parkview Avenue', date: '18/03/2025', amount: '$875.50', status: 'Pending', invoiced: false},
+        {id: '7200', client: '42 Mountain Road', date: '15/03/2025', amount: '$2,530.00', status: 'Email Sent', invoiced: false},
+        {id: '7199', client: '106 River Street', date: '10/03/2025', amount: '$1,075.00', status: 'Completed', invoiced: false}
+      ];
+
       // Global variables for invoice functionality
       let currentInvoiceQuoteId = null;
       let currentInvoiceFileId = null;
@@ -186,27 +197,13 @@
         const quotesList = document.getElementById('quotesList');
         quotesList.innerHTML = '<li class="px-4 py-4 flex items-center text-sm text-gray-500"><div class="animate-pulse mr-2 h-4 w-4 bg-blue-500 rounded-full"></div>Loading quotes...</li>';
         
-        // Check if we're running in Google Apps Script environment or standalone
-        if (typeof google !== 'undefined' && google.script) {
-          // We're in Google Apps Script
-          google.script.run
-            .withSuccessHandler(displayQuotes)
-            .withFailureHandler(handleError)
-            .getRecentQuotes();
-        } else {
-          // We're running standalone - show demo data
-          setTimeout(function() {
-            const demoQuotes = [
-              {id: '7105', client: '3 Hojan Crt Belmont', date: '08/02/2025', amount: '$540.00', status: 'Pending', invoiced: false},
-              {id: '7108', client: 'Unit 2/6 Hillford St Newcomb', date: '03/02/2025', amount: '$600.00', status: 'Completed', invoiced: false},
-              {id: '6027', client: '47 Ormond Rd', date: '10/11/2023', amount: '$468.75', status: 'Invoiced', invoiced: true}
-            ];
-            displayQuotes(demoQuotes);
-          }, 500);
-        }
+        // Short delay to simulate loading
+        setTimeout(function() {
+          displayQuotes(demoQuotes);
+        }, 500);
       };
 
-      // Optimized display quotes function
+      // Display quotes function
       function displayQuotes(quotes) {
         const quotesList = document.getElementById('quotesList');
         
@@ -253,6 +250,7 @@
                         quote.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
                         quote.status === 'Completed' ? 'bg-green-100 text-green-800' :
                         quote.status === 'Invoiced' ? 'bg-blue-100 text-blue-800' :
+                        quote.status === 'Email Sent' ? 'bg-blue-100 text-blue-800' :
                         'bg-gray-100 text-gray-800'
                       }">
                         ${quote.status}
@@ -262,11 +260,11 @@
                 </div>
                 <div class="ml-5 flex space-x-2">
                   ${!quote.invoiced ?
-                    `<button onclick="openInvoiceModal('${quote.id}')" class="text-green-600 hover:text-green-900 font-medium">
+                    `<button onclick="openInvoiceModalDemo('${quote.id}')" class="text-green-600 hover:text-green-900 font-medium">
                       Invoice
                     </button>` :
                     ''}
-                  <button onclick="openQuote('${quote.id}')" class="text-blue-600 hover:text-blue-900">
+                  <button onclick="openQuoteDemo('${quote.id}')" class="text-blue-600 hover:text-blue-900">
                     Open →
                   </button>
                 </div>
@@ -279,126 +277,43 @@
         quotesList.innerHTML = htmlContent;
       }
 
-      // Optimized error handler
-      function handleError(error) {
-        console.error('Error:', error);
-        alert('An error occurred: ' + error);
+      // Demo modal handlers
+      function newQuoteHandler() {
+        showDemoMessage("Create a new quote");
       }
 
-      function newQuote() {
-        if (typeof google !== 'undefined' && google.script) {
-          google.script.run
-            .withSuccessHandler(function(url) {
-              window.location.href = url;
-            })
-            .withFailureHandler(function(error) {
-              alert('Error opening quote form: ' + error);
-            })
-            .getQuoteFormUrl();
-        } else {
-          alert('This feature requires Google Apps Script to run.');
-        }
+      function fixAllPricesHandler() {
+        showDemoMessage("Fix quote prices");
       }
 
-      function openQuote(id) {
-        if (typeof google !== 'undefined' && google.script) {
-          google.script.run
-            .withSuccessHandler(function(response) {
-              if (response.success) {
-                google.script.run
-                  .withSuccessHandler(function(url) {
-                    window.location.href = url + '?page=newQuote&quoteId=' + id;
-                  })
-                  .getScriptUrl();
-              } else {
-                alert('Error opening quote: ' + response.error);
-              }
-            })
-            .withFailureHandler(function(error) {
-              alert('Error: ' + error);
-            })
-            .getQuoteById(id);
-        } else {
-          alert('This feature requires Google Apps Script to run.');
-        }
+      function runSetupHandler() {
+        showDemoMessage("Run system setup");
       }
 
-      function runSetup() {
-        if (typeof google !== 'undefined' && google.script) {
-          google.script.run
-            .withSuccessHandler(function(msg) {
-              alert(msg);
-              window.location.reload();
-            })
-            .withFailureHandler(function(error) {
-              alert('Error: ' + error);
-            })
-            .runSetup();
-        } else {
-          alert('This feature requires Google Apps Script to run.');
-        }
+      function openQuoteDemo(id) {
+        showDemoMessage(`Open quote #${id}`);
       }
-     
-      // Fix all quote prices
-      function fixAllPrices() {
-        if (typeof google === 'undefined' || !google.script) {
-          alert('This feature requires Google Apps Script to run.');
-          return;
-        }
-        
-        if (confirm('This will recalculate and fix the prices for all quotes in the system. Continue?')) {
-          google.script.run
-            .withSuccessHandler(function(result) {
-              if (result.success) {
-                alert(`Price fix complete!
-                Updated: ${result.totalUpdated} quotes
-                Already correct: ${result.totalCorrect} quotes
-                Skipped: ${result.totalSkipped} quotes
-                Errors: ${result.totalErrors} quotes`);
-               
-                // Reload quotes to show updated prices
-                google.script.run
-                  .withSuccessHandler(displayQuotes)
-                  .withFailureHandler(handleError)
-                  .getRecentQuotes();
-              } else {
-                alert('Error fixing prices: ' + result.error);
-              }
-            })
-            .withFailureHandler(function(error) {
-              alert('Error: ' + error);
-            })
-            .fixAllQuotePrices();
-        }
-      }
-     
-      // Invoice functionality
-      function openInvoiceModal(quoteId) {
-        if (typeof google === 'undefined' || !google.script) {
-          alert('This feature requires Google Apps Script to run.');
-          return;
-        }
-        
+
+      function openInvoiceModalDemo(quoteId) {
+        // For demo, we'll actually show the modal
         currentInvoiceQuoteId = quoteId;
         document.getElementById('invoiceQuoteDetails').textContent = `Creating invoice for Quote #${quoteId}`;
-       
+        
         // Clear any existing items
         document.getElementById('invoiceItemsContainer').innerHTML = '';
-       
+        
         // Add one empty item by default
         addInvoiceItem();
-       
+        
         // Show the modal
         document.getElementById('invoiceModal').classList.remove('hidden');
-       
-        // Get client data for later use
-        google.script.run
-          .withSuccessHandler(function(response) {
-            if (response.success) {
-              currentClientData = response.data;
-            }
-          })
-          .getQuoteById(quoteId);
+        
+        // Set demo client data
+        currentClientData = {
+          email: "client@example.com",
+          clientName: demoQuotes.find(q => q.id === quoteId)?.client || "Test Client",
+          address: "123 Demo Street"
+        };
       }
      
       function closeInvoiceModal() {
@@ -408,13 +323,6 @@
      
       function closeInvoiceSuccessModal() {
         document.getElementById('invoiceSuccessModal').classList.add('hidden');
-        // Reload quotes to reflect the new invoice status
-        if (typeof google !== 'undefined' && google.script) {
-          google.script.run
-            .withSuccessHandler(displayQuotes)
-            .withFailureHandler(handleError)
-            .getRecentQuotes();
-        }
       }
      
       function addInvoiceItem() {
@@ -444,7 +352,6 @@
         `;
        
         container.appendChild(newItem);
-       
         return newItem;
       }
      
@@ -484,11 +391,6 @@
       }
      
       function generateInvoice() {
-        if (typeof google === 'undefined' || !google.script) {
-          alert('This feature requires Google Apps Script to run.');
-          return;
-        }
-        
         if (!currentInvoiceQuoteId) {
           alert('No quote selected for invoicing.');
           return;
@@ -501,51 +403,29 @@
         const originalText = generateButton.innerText;
         generateButton.innerText = 'Generating...';
         generateButton.disabled = true;
-       
-        // Call server function to generate invoice
-        google.script.run
-          .withSuccessHandler(function(response) {
-            // Reset button state
-            generateButton.innerText = originalText;
-            generateButton.disabled = false;
-           
-            if (response.success) {
-              // Store invoice data for email function
-              currentInvoiceFileId = response.fileId;
-              currentInvoiceNumber = response.invoiceNumber;
-             
-              // Update success modal with invoice details
-              document.getElementById('invoiceSuccessDetails').textContent =
-                `Invoice #${response.invoiceNumber} has been created for Quote #${response.quoteNumber}.`;
-              document.getElementById('viewInvoicePdfLink').href = response.pdfUrl;
-             
-              // Hide invoice modal and show success modal
-              document.getElementById('invoiceModal').classList.add('hidden');
-              document.getElementById('invoiceSuccessModal').classList.remove('hidden');
-            } else {
-              alert('Error generating invoice: ' + response.error);
-            }
-          })
-          .withFailureHandler(function(error) {
-            // Reset button state
-            generateButton.innerText = originalText;
-            generateButton.disabled = false;
-           
-            alert('Error: ' + error);
-          })
-          .generateInvoice({
-            quoteId: currentInvoiceQuoteId,
-            additionalItems: additionalItems,
-            skipEmail: true
-          });
+        
+        // Simulate API call with delay
+        setTimeout(function() {
+          // Reset button state
+          generateButton.innerText = originalText;
+          generateButton.disabled = false;
+          
+          // Simulate successful response
+          currentInvoiceFileId = "demo-file-id";
+          currentInvoiceNumber = `${currentInvoiceQuoteId}-1`;
+          
+          // Update success modal with invoice details
+          document.getElementById('invoiceSuccessDetails').textContent =
+            `Invoice #${currentInvoiceNumber} has been created for Quote #${currentInvoiceQuoteId}.`;
+          document.getElementById('viewInvoicePdfLink').href = "#";
+          
+          // Hide invoice modal and show success modal
+          document.getElementById('invoiceModal').classList.add('hidden');
+          document.getElementById('invoiceSuccessModal').classList.remove('hidden');
+        }, 1500);
       }
      
       function sendInvoiceEmail() {
-        if (typeof google === 'undefined' || !google.script) {
-          alert('This feature requires Google Apps Script to run.');
-          return;
-        }
-        
         if (!currentInvoiceNumber || !currentInvoiceFileId || !currentInvoiceQuoteId || !currentClientData) {
           alert('Missing invoice information. Please try generating the invoice again.');
           return;
@@ -554,38 +434,21 @@
         const emailBtn = document.getElementById('emailInvoiceBtn');
         emailBtn.disabled = true;
         emailBtn.innerText = 'Sending...';
-       
-        const emailData = {
-          invoiceNumber: currentInvoiceNumber,
-          quoteNumber: currentInvoiceQuoteId,
-          fileId: currentInvoiceFileId,
-          email: currentClientData.email,
-          clientName: currentClientData.clientName,
-          address: currentClientData.address
-        };
-       
-        google.script.run
-          .withSuccessHandler(function(response) {
-            emailBtn.disabled = false;
-           
-            if (response.success) {
-              emailBtn.innerText = 'Email Sent ✓';
-              emailBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
-              emailBtn.classList.add('bg-gray-400', 'hover:bg-gray-400', 'cursor-not-allowed');
-              alert('Invoice has been emailed to the client successfully!');
-            } else {
-              emailBtn.innerText = 'Send to Client';
-              alert('Error sending email: ' + response.error);
-            }
-          })
-          .withFailureHandler(function(error) {
-            emailBtn.disabled = false;
-            emailBtn.innerText = 'Send to Client';
-            alert('Error: ' + error);
-          })
-          .sendInvoiceEmail(emailData);
+        
+        // Simulate email sending
+        setTimeout(function() {
+          emailBtn.innerText = 'Email Sent ✓';
+          emailBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+          emailBtn.classList.add('bg-gray-400', 'hover:bg-gray-400', 'cursor-not-allowed');
+          alert('Invoice has been emailed to the client successfully!');
+        }, 1500);
+      }
+      
+      // Helper function to show demo messages
+      function showDemoMessage(action) {
+        alert(`This is a demo interface. The "${action}" feature requires the full application environment.`);
       }
     </script>
-    <div style="position: fixed; bottom: 5px; right: 5px; font-size: 10px; color: #999;">v1.24</div>
+    <div style="position: fixed; bottom: 5px; right: 5px; font-size: 10px; color: #999;">v1.24 - Demo</div>
   </body>
 </html>
