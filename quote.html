@@ -7,75 +7,121 @@
   <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100">
-  <div class="max-w-md mx-auto px-4 py-8">
-    <!-- Header -->
-    <div class="text-center mb-8">
-      <h1 class="text-2xl font-bold text-gray-900">EMS Fencing</h1>
-      <p class="text-gray-600">Mobile Quote System</p>
+  <div class="max-w-2xl mx-auto px-4 py-8">
+    <!-- Navigation header -->
+    <div class="bg-white shadow rounded-lg mb-6">
+      <div class="px-4 py-3 flex justify-between items-center">
+        <button onclick="returnToDashboard()" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 hover:text-gray-700 focus:outline-none transition">
+          ← Back to Dashboard
+        </button>
+        <button onclick="confirmNewQuote()" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          New Quote
+        </button>
+      </div>
     </div>
 
     <!-- Quote Form -->
     <div id="quoteForm" class="bg-white shadow rounded-lg p-6">
-      <h2 class="text-lg font-medium text-gray-900 mb-4">Create Quote</h2>
-      
-      <!-- Client Details -->
-      <div class="space-y-4 mb-6">
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Client Name</label>
-          <input type="text" id="clientName" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Phone Number</label>
-          <input type="tel" id="phoneNumber" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Address</label>
-          <input type="text" id="address" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Email</label>
-          <input type="email" id="email" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+      <!-- Progress bar -->
+      <div class="mb-8">
+        <div class="relative pt-1">
+          <div class="flex mb-2 items-center justify-between">
+            <div>
+              <span id="stepIndicator" class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-200">
+                Step 1 of 4
+              </span>
+            </div>
+          </div>
+          <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-blue-200">
+            <div id="progressBar" style="width:25%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500"></div>
+          </div>
         </div>
       </div>
 
-      <!-- Fence Details -->
-      <div class="space-y-4 mb-6">
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Length (meters)</label>
-          <input type="number" id="length" step="0.1" min="0" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Fence Type</label>
-          <select id="fenceType" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-            <option value="">Select fence type...</option>
-            <option value="Treated Pine Fence">Treated Pine Fence - $110 per meter</option>
-            <option value="Colorbond Fence">Colorbond Fence - $145 per meter</option>
-          </select>
+      <!-- Step 1: Client Details -->
+      <div id="step1" class="step-content">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Client Details</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Client Name</label>
+            <input type="text" id="clientName" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" onblur="formatClientName()">
+            <p id="formattedClientName" class="mt-1 text-xs text-gray-500 italic hidden"></p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Phone Number</label>
+            <input type="tel" id="phoneNumber" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Address</label>
+            <input type="text" id="address" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" onblur="formatAddress()">
+            <p id="formattedAddress" class="mt-1 text-xs text-gray-500 italic hidden"></p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Email</label>
+            <input type="email" id="email" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+          </div>
         </div>
       </div>
 
-      <!-- Additional Options -->
-      <div class="space-y-4 mb-6">
-        <div class="space-y-2">
-          <div class="flex items-center">
-            <input type="checkbox" id="demoRemoval" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-            <label class="ml-2 block text-sm text-gray-700">Demolition & Removal - $45 per meter</label>
+      <!-- Step 2: Fence Specifications -->
+      <div id="step2" class="step-content hidden">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Fence Specifications</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Length (meters)</label>
+            <input type="number" id="length" step="0.1" min="0" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
           </div>
-         
-          <div class="flex items-center">
-            <input type="checkbox" id="split" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-            <label class="ml-2 block text-sm text-gray-700">Split cost with neighbor (50%)</label>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Fence Type</label>
+            <select id="fenceType" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+              <option value="">Select fence type...</option>
+              <option value="Treated Pine Fence">Treated Pine Fence - $110 per meter</option>
+              <option value="Colorbond Fence">Colorbond Fence - $145 per meter</option>
+            </select>
           </div>
-         
-          <div class="flex items-center mt-4">
-            <input type="checkbox" id="concreteCutting" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-            <label class="ml-2 block text-sm text-gray-700">Concrete cutting required</label>
+        </div>
+      </div>
+
+      <!-- Step 3: Additional Options -->
+      <div id="step3" class="step-content hidden">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Additional Options</h3>
+        <div class="space-y-4">
+          <div class="space-y-2">
+            <div class="flex items-center">
+              <input type="checkbox" id="demoRemoval" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+              <label class="ml-2 block text-sm text-gray-700">Demolition & Removal - $45 per meter</label>
+            </div>
+           
+            <div class="flex items-center">
+              <input type="checkbox" id="split" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+              <label class="ml-2 block text-sm text-gray-700">Split cost with neighbor (50%)</label>
+            </div>
+           
+            <div class="flex items-center mt-4">
+              <input type="checkbox" id="concreteCutting" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+              <label class="ml-2 block text-sm text-gray-700">Concrete cutting required</label>
+            </div>
+           
+            <div id="concreteCutsContainer" class="pl-6 mt-2 hidden">
+              <label class="block text-sm font-medium text-gray-700">Number of cuts ($25 each)</label>
+              <input type="number" id="concreteCuts" min="1" value="1" class="mt-1 block w-48 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
           </div>
-         
-          <div id="concreteCutsContainer" class="pl-6 mt-2 hidden">
-            <label class="block text-sm font-medium text-gray-700">Number of cuts ($25 each)</label>
-            <input type="number" id="concreteCuts" min="1" value="1" class="mt-1 block w-48 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Custom Items -->
+      <div id="step4" class="step-content hidden">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Custom Items (Optional)</h3>
+       
+        <div id="customItemsContainer">
+          <!-- Template for custom item - will be populated by JS -->
+        </div>
+       
+        <div class="mt-4">
+          <button type="button" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" onclick="addCustomItem()">
+            Add Another Item
+          </button>
         </div>
       </div>
 
@@ -94,6 +140,15 @@
           <div id="concreteCuttingRow" class="flex justify-between text-sm hidden">
             <span class="text-gray-500">Concrete Cutting:</span>
             <span id="concreteCost" class="text-gray-900">$0.00</span>
+          </div>
+         
+          <!-- Custom Items Summary -->
+          <div id="customItemsRow" class="hidden">
+            <div class="flex justify-between text-sm border-t border-gray-200 pt-1 mt-1">
+              <span class="text-gray-500">Custom Items:</span>
+              <span id="customItemsCost" class="text-gray-900">$0.00</span>
+            </div>
+            <div id="customItemsDetailContainer" class="ml-4 text-xs text-gray-500"></div>
           </div>
          
           <div class="pt-2 flex justify-between text-sm font-medium border-t border-gray-200">
@@ -121,16 +176,19 @@
         </div>
       </div>
 
-      <!-- Submit Button -->
-      <div class="mt-6">
-        <button id="generateQuoteBtn" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-          Generate Quote
+      <!-- Navigation buttons -->
+      <div id="navigationButtons" class="mt-8 flex justify-between">
+        <button id="prevButton" onclick="prevStep()" class="hidden bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">
+          Previous
+        </button>
+        <button id="nextButton" onclick="nextStep()" class="ml-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          Next
         </button>
       </div>
     </div>
 
-    <!-- Success Panel (initially hidden) -->
-    <div id="successPanel" class="hidden bg-white shadow rounded-lg p-6 mt-6">
+    <!-- Quote Review Panel (initially hidden) -->
+    <div id="quoteReviewPanel" class="hidden mt-6 bg-white border border-gray-200 rounded-md p-4">
       <div class="flex justify-between items-center mb-4">
         <h3 class="text-lg font-medium text-gray-900">Quote Generated Successfully</h3>
         <span id="quoteNumber" class="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-sm font-medium"></span>
@@ -140,20 +198,33 @@
         <p class="text-sm text-gray-600 mb-2">Your quote has been created and is ready to review.</p>
         <div class="flex space-x-3">
           <a id="viewPdfLink" href="#" target="_blank" class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
+            </svg>
             View PDF
           </a>
-          <button id="emailQuoteBtn" class="inline-flex items-center px-3 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+          <button id="emailQuoteBtn" onclick="sendQuoteEmail()" class="inline-flex items-center px-3 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+              <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+            </svg>
             Send to Client
           </button>
         </div>
       </div>
      
       <div class="border-t border-gray-200 pt-4">
-        <button id="newQuoteBtn" class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+        <button onclick="createNewQuote()" class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+          </svg>
           Create New Quote
         </button>
-        <button id="backToDashboardBtn" class="ml-2 inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-          Back to Dashboard
+        <button onclick="returnToDashboard()" class="ml-3 inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+          </svg>
+          Return to Dashboard
         </button>
       </div>
     </div>
@@ -169,10 +240,115 @@
 
   <script>
     // Global variables
-    let scriptUrl = 'https://script.google.com/macros/s/AKfycbzU8IYUh__S7Fz2cA2ijYlnHPLt3vPR7bp-v0IQShJGvX2O2Zq8JfIiiFP6KrG0KXuuUQ/exec';
+    let isSubmitting = false;
+    let quoteGenerated = false;
     let currentQuoteNumber = null;
+    let currentStep = 1;
     let pdfUrl = null;
     let quoteFileId = null;
+    const totalSteps = 4; // Total number of steps including custom items
+    let scriptUrl = 'https://script.google.com/macros/s/AKfycbzU8IYUh__S7Fz2cA2ijYlnHPLt3vPR7bp-v0IQShJGvX2O2Zq8JfIiiFP6KrG0KXuuUQ/exec';
+
+    // Initialize when page loads
+    window.onload = function() {
+      // Add change listeners for price updates
+      ['length', 'fenceType', 'demoRemoval', 'concreteCutting', 'concreteCuts', 'split'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.addEventListener('change', updatePricePreview);
+        }
+      });
+     
+      // Show/hide concrete cuts field based on checkbox
+      document.getElementById('concreteCutting').addEventListener('change', function() {
+        document.getElementById('concreteCutsContainer').classList.toggle('hidden', !this.checked);
+        updatePricePreview();
+      });
+     
+      // Add initial custom item
+      addCustomItem();
+
+      // Parse URL parameters
+      const params = getUrlParams();
+      
+      if (params.id) {
+        // Load quote data if quoteId is provided
+        showLoading(true);
+        
+        fetch(scriptUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8',
+          },
+          body: JSON.stringify({
+            action: 'getQuoteById',
+            id: params.id
+          })
+        })
+        .then(response => response.json())
+        .then(response => {
+          showLoading(false);
+          
+          if (response.success) {
+            // Fill form with quote data
+            const data = response.data;
+            currentQuoteNumber = data.quoteNumber;
+            quoteGenerated = true;
+           
+            document.getElementById('clientName').value = data.clientName;
+            document.getElementById('phoneNumber').value = data.phoneNumber || '';
+            document.getElementById('address').value = data.address;
+            document.getElementById('email').value = data.email;
+            document.getElementById('length').value = data.length;
+            document.getElementById('fenceType').value = data.fenceType;
+           
+            // Set additional services
+            document.getElementById('demoRemoval').checked = data.additionalServices && data.additionalServices.demoRemoval;
+            document.getElementById('concreteCutting').checked = data.additionalServices && data.additionalServices.concreteCutting;
+            if (data.additionalServices && data.additionalServices.concreteCutting) {
+              document.getElementById('concreteCutsContainer').classList.remove('hidden');
+              document.getElementById('concreteCuts').value = data.additionalServices.concreteCuts || 1;
+            }
+            document.getElementById('split').checked = data.additionalServices && data.additionalServices.split;
+           
+            // Load custom items if any
+            if (data.customItems && data.customItems.length > 0) {
+              // Clear any existing custom items
+              document.getElementById('customItemsContainer').innerHTML = '';
+             
+              // Add each custom item from data
+              data.customItems.forEach(item => {
+                const newItem = addCustomItem();
+                const descInput = newItem.querySelector('.custom-description');
+                const amountInput = newItem.querySelector('.custom-amount');
+                const gstCheckbox = newItem.querySelector('.includes-gst');
+               
+                descInput.value = item.description || '';
+                amountInput.value = item.amount || '';
+                gstCheckbox.checked = item.includesGst || false;
+               
+                // Format the description
+                formatCustomDescription(descInput);
+              });
+            }
+           
+            // Format text fields
+            formatClientName();
+            formatAddress();
+           
+            // Update UI
+            updateProgress();
+            updatePricePreview();
+          } else {
+            alert('Error loading quote: ' + response.error);
+          }
+        })
+        .catch(error => {
+          showLoading(false);
+          alert('Error: ' + error);
+        });
+      }
+    };
 
     // Parse URL parameters
     function getUrlParams() {
@@ -188,257 +364,201 @@
       return params;
     }
 
-    // Initialize when page loads
-    document.addEventListener('DOMContentLoaded', function() {
-      // Add change listeners for price updates
-      ['length', 'fenceType', 'demoRemoval', 'concreteCutting', 'concreteCuts', 'split'].forEach(id => {
-        const element = document.getElementById(id);
-        if (element) {
-          element.addEventListener('change', updatePricePreview);
-        }
-      });
+    // Text formatting functions
+    function formatClientName() {
+      const input = document.getElementById('clientName');
+      const preview = document.getElementById('formattedClientName');
      
-      // Show/hide concrete cuts field based on checkbox
-      document.getElementById('concreteCutting').addEventListener('change', function() {
-        document.getElementById('concreteCutsContainer').classList.toggle('hidden', !this.checked);
-        updatePricePreview();
-      });
-      
-      // Generate quote button
-      document.getElementById('generateQuoteBtn').addEventListener('click', generateQuote);
-      
-      // Email quote button
-      document.getElementById('emailQuoteBtn').addEventListener('click', sendQuoteEmail);
-      
-      // New quote button
-      document.getElementById('newQuoteBtn').addEventListener('click', resetForm);
-      
-      // Back to dashboard button
-      document.getElementById('backToDashboardBtn').addEventListener('click', function() {
-        window.location.href = 'dashboard.html';
-      });
-      
-      // Check if we're opening an existing quote
-      const params = getUrlParams();
-      
-      if (params.id) {
-        // We're opening an existing quote
-        const quoteData = JSON.parse(localStorage.getItem('quoteData') || '{}');
+      if (input.value) {
+        // Simple capitalization client-side (server will do proper formatting)
+        const formatted = input.value
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join(' ');
         
-        if (quoteData.quoteNumber) {
-          // Fill form with quote data
-          document.getElementById('clientName').value = quoteData.clientName || '';
-          document.getElementById('phoneNumber').value = quoteData.phoneNumber || '';
-          document.getElementById('address').value = quoteData.address || '';
-          document.getElementById('email').value = quoteData.email || '';
-          document.getElementById('length').value = quoteData.length || '';
-          document.getElementById('fenceType').value = quoteData.fenceType || '';
-          
-          // Set additional services
-          document.getElementById('demoRemoval').checked = 
-            quoteData.additionalServices && quoteData.additionalServices.demoRemoval;
-          document.getElementById('concreteCutting').checked = 
-            quoteData.additionalServices && quoteData.additionalServices.concreteCutting;
-          
-          if (quoteData.additionalServices && quoteData.additionalServices.concreteCutting) {
-            document.getElementById('concreteCutsContainer').classList.remove('hidden');
-            document.getElementById('concreteCuts').value = 
-              quoteData.additionalServices.concreteCuts || 1;
-          }
-          
-          document.getElementById('split').checked = 
-            quoteData.additionalServices && quoteData.additionalServices.split;
-          
-          // Update price preview
-          updatePricePreview();
-        }
-      }
-    });
-
-    // Price preview calculator
-    function updatePricePreview() {
-      const length = parseFloat(document.getElementById('length').value) || 0;
-      const fenceType = document.getElementById('fenceType').value;
-      const demoRemoval = document.getElementById('demoRemoval').checked;
-      const concreteCutting = document.getElementById('concreteCutting').checked;
-      const concreteCuts = concreteCutting ? parseInt(document.getElementById('concreteCuts').value) || 0 : 0;
-      const split = document.getElementById('split').checked;
-     
-      let fenceCost = 0;
-      if (fenceType === 'Treated Pine Fence') {
-        fenceCost = length * 110;
-      } else if (fenceType === 'Colorbond Fence') {
-        fenceCost = length * 145;
-      }
-     
-      let demoRemovalCost = 0;
-      if (demoRemoval) {
-        demoRemovalCost = length * 45;
-      }
-     
-      let concreteCuttingCost = 0;
-      if (concreteCutting) {
-        concreteCuttingCost = concreteCuts * 25;
-      }
-     
-      // Calculate total (excluding GST)
-      let totalCost = fenceCost + demoRemovalCost + concreteCuttingCost;
-     
-      // Apply split if selected
-      if (split) {
-        totalCost = totalCost / 2;
-      }
-     
-      // Calculate GST
-      const gstAmount = totalCost * 0.1;
-     
-      // Calculate total with GST
-      const totalWithGst = totalCost + gstAmount;
-     
-      // Update display
-      document.getElementById('fenceCost').textContent = formatPrice(fenceCost);
-      document.getElementById('demoRemovalCost').textContent = formatPrice(demoRemovalCost);
-      document.getElementById('demoRemovalRow').classList.toggle('hidden', !demoRemoval);
-      document.getElementById('concreteCost').textContent = formatPrice(concreteCuttingCost);
-      document.getElementById('concreteCuttingRow').classList.toggle('hidden', !concreteCutting);
-      document.getElementById('totalCost').textContent = formatPrice(totalCost);
-      document.getElementById('gstAmount').textContent = formatPrice(gstAmount);
-      document.getElementById('totalCostGst').textContent = formatPrice(totalWithGst);
-     
-      // Update split cost display
-      if (split) {
-        document.getElementById('splitAmount').textContent = formatPrice(totalCost);
-        document.getElementById('splitAmountGst').textContent = formatPrice(totalWithGst);
-        document.getElementById('splitCostRow').classList.remove('hidden');
+        input.value = formatted;
+        preview.textContent = `Will appear as: ${formatted}`;
+        preview.classList.remove('hidden');
       } else {
-        document.getElementById('splitCostRow').classList.add('hidden');
+        preview.classList.add('hidden');
+      }
+    }
+   
+    function formatAddress() {
+      const input = document.getElementById('address');
+      const preview = document.getElementById('formattedAddress');
+     
+      if (input.value) {
+        // Simple capitalization client-side (server will do proper formatting)
+        const formatted = input.value
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join(' ');
+        
+        input.value = formatted;
+        preview.textContent = `Will appear as: ${formatted}`;
+        preview.classList.remove('hidden');
+      } else {
+        preview.classList.add('hidden');
+      }
+    }
+   
+    function formatCustomDescription(element) {
+      const preview = element.closest('.custom-item').querySelector('.formatted-description');
+     
+      if (element.value) {
+        // Simple capitalization client-side
+        const formatted = element.value
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join(' ');
+        
+        element.value = formatted;
+        preview.textContent = `Will appear as: ${formatted}`;
+        preview.classList.remove('hidden');
+       
+        // Update price preview since custom item text changed
+        updatePricePreview();
+      } else {
+        preview.classList.add('hidden');
       }
     }
 
-    // Format price as currency
-    function formatPrice(amount) {
-      return '$' + Number(amount).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    // Custom items functions
+    function addCustomItem() {
+      const container = document.getElementById('customItemsContainer');
+     
+      // Create new item from template
+      const newItem = document.createElement('div');
+      newItem.className = 'custom-item bg-gray-50 p-4 rounded-md mb-4';
+      newItem.innerHTML = `
+        <div class="space-y-3">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Description</label>
+            <input type="text" class="custom-description mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" onblur="formatCustomDescription(this)">
+            <p class="formatted-description mt-1 text-xs text-gray-500 italic hidden"></p>
+          </div>
+         
+          <div class="flex space-x-4">
+            <div class="flex-1">
+              <label class="block text-sm font-medium text-gray-700">Amount ($)</label>
+              <input type="number" step="0.01" min="0" class="custom-amount mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+           
+            <div class="flex items-end pb-2">
+              <div class="flex items-center">
+                <input type="checkbox" class="includes-gst h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                <label class="ml-2 block text-sm text-gray-700">Price includes GST</label>
+              </div>
+            </div>
+          </div>
+         
+          <div class="flex justify-end">
+            <button type="button" class="remove-item inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-red-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500" onclick="removeCustomItem(this)">
+              Remove
+            </button>
+          </div>
+        </div>
+      `;
+     
+      container.appendChild(newItem);
+     
+      // Add change event listeners to update price preview
+      const amountInput = newItem.querySelector('.custom-amount');
+      const gstCheckbox = newItem.querySelector('.includes-gst');
+     
+      amountInput.addEventListener('change', updatePricePreview);
+      gstCheckbox.addEventListener('change', updatePricePreview);
+     
+      return newItem;
     }
-
-    // Generate quote function
-    async function generateQuote() {
-      if (!validateForm()) return;
-      
-      showLoading(true);
-      
-      const params = getUrlParams();
-      const isUpdate = !!params.id;
-      
-      const quoteData = {
-        clientName: document.getElementById('clientName').value,
-        phoneNumber: document.getElementById('phoneNumber').value,
-        address: document.getElementById('address').value,
-        email: document.getElementById('email').value,
-        length: document.getElementById('length').value,
-        fenceType: document.getElementById('fenceType').value,
-        additionalServices: {
-          demoRemoval: document.getElementById('demoRemoval').checked,
-          concreteCutting: document.getElementById('concreteCutting').checked,
-          concreteCuts: document.getElementById('concreteCutting').checked ? 
-            parseInt(document.getElementById('concreteCuts').value) : 0,
-          split: document.getElementById('split').checked
-        },
-        isNew: !isUpdate,
-        skipEmail: true
-      };
-      
-      // For updates, include the quote number
-      if (isUpdate) {
-        quoteData.quoteNumber = params.id;
-      }
-      
-      try {
-        const response = await fetch(scriptUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'text/plain;charset=utf-8',
-          },
-          body: JSON.stringify({
-            action: 'generateQuote',
-            quoteData: quoteData
-          })
-        });
-        
-        const result = await response.json();
-        showLoading(false);
-        
-        if (result.success) {
-          // Show success panel
-          document.getElementById('quoteForm').classList.add('hidden');
-          document.getElementById('successPanel').classList.remove('hidden');
-          
-          // Set quote details
-          currentQuoteNumber = result.quoteNumber;
-          pdfUrl = result.pdfUrl;
-          quoteFileId = result.fileId;
-          
-          document.getElementById('quoteNumber').textContent = `Quote #${result.quoteNumber}`;
-          document.getElementById('viewPdfLink').href = pdfUrl;
-        } else {
-          alert('Error generating quote: ' + result.error);
+   
+    function removeCustomItem(button) {
+      const item = button.closest('.custom-item');
+      item.parentNode.removeChild(item);
+      updatePricePreview();
+    }
+   
+    function getCustomItems() {
+      const items = [];
+      document.querySelectorAll('.custom-item').forEach(item => {
+        const description = item.querySelector('.custom-description').value.trim();
+        const amount = parseFloat(item.querySelector('.custom-amount').value) || 0;
+        const includesGst = item.querySelector('.includes-gst').checked;
+       
+        if (description || amount > 0) {
+          items.push({
+            description: description,
+            amount: amount,
+            includesGst: includesGst
+          });
         }
-      } catch (error) {
-        showLoading(false);
-        alert('Error: ' + error);
-      }
+      });
+     
+      return items;
     }
 
-    // Send quote email
-    async function sendQuoteEmail() {
-      if (!currentQuoteNumber || !quoteFileId) {
-        alert('Quote information is missing. Please try generating the quote again.');
+    function returnToDashboard() {
+      if (isSubmitting) {
+        alert('Please wait until the current operation completes.');
         return;
       }
-      
-      const emailBtn = document.getElementById('emailQuoteBtn');
-      emailBtn.disabled = true;
-      emailBtn.textContent = 'Sending...';
-      
-      const emailData = {
-        quoteNumber: currentQuoteNumber,
-        fileId: quoteFileId,
-        email: document.getElementById('email').value,
-        clientName: document.getElementById('clientName').value,
-        address: document.getElementById('address').value
-      };
-      
-      try {
-        const response = await fetch(scriptUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'text/plain;charset=utf-8',
-          },
-          body: JSON.stringify({
-            action: 'sendQuoteEmail',
-            emailData: emailData
-          })
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-          emailBtn.textContent = 'Email Sent ✓';
-          emailBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
-          emailBtn.classList.add('bg-gray-400', 'hover:bg-gray-400', 'cursor-not-allowed');
-          alert('Quote has been emailed to the client successfully!');
-        } else {
-          emailBtn.disabled = false;
-          emailBtn.textContent = 'Send to Client';
-          alert('Error sending email: ' + result.error);
+     
+      if (hasUnsavedChanges() && !quoteGenerated) {
+        if (confirm('You have unsaved changes. Are you sure you want to leave?')) {
+          window.location.href = 'dashboard.html';
         }
-      } catch (error) {
-        emailBtn.disabled = false;
-        emailBtn.textContent = 'Send to Client';
-        alert('Error: ' + error);
+      } else {
+        window.location.href = 'dashboard.html';
       }
     }
 
-    // Reset form for new quote
+    function confirmNewQuote() {
+      if (isSubmitting) {
+        alert('Please wait until the current operation completes.');
+        return;
+      }
+     
+      if (hasUnsavedChanges() || quoteGenerated) {
+        if (confirm('Starting a new quote will discard any current changes. Continue?')) {
+          resetForm();
+        }
+      } else {
+        resetForm();
+      }
+    }
+   
+    function createNewQuote() {
+      resetForm();
+    }
+
+    function hasUnsavedChanges() {
+      return document.getElementById('clientName').value ||
+            document.getElementById('phoneNumber').value ||
+            document.getElementById('address').value ||
+            document.getElementById('email').value ||
+            document.getElementById('length').value ||
+            document.getElementById('fenceType').value !== '' ||
+            document.getElementById('demoRemoval').checked ||
+            document.getElementById('concreteCutting').checked ||
+            document.getElementById('split').checked ||
+            hasCustomItems();
+    }
+   
+    function hasCustomItems() {
+      let hasItems = false;
+      document.querySelectorAll('.custom-item').forEach(item => {
+        const description = item.querySelector('.custom-description').value.trim();
+        const amount = parseFloat(item.querySelector('.custom-amount').value) || 0;
+       
+        if (description || amount > 0) {
+          hasItems = true;
+        }
+      });
+     
+      return hasItems;
+    }
+
     function resetForm() {
       // Clear all form fields
       document.getElementById('clientName').value = '';
@@ -452,66 +572,334 @@
       document.getElementById('concreteCuts').value = 1;
       document.getElementById('concreteCutsContainer').classList.add('hidden');
       document.getElementById('split').checked = false;
+     
+      // Reset formatting previews
+            document.getElementById('formattedClientName').classList.add('hidden');
+            document.getElementById('formattedAddress').classList.add('hidden');
+           
+            // Clear custom items
+            document.getElementById('customItemsContainer').innerHTML = '';
+            addCustomItem();
+           
+            // Reset price display
+            document.getElementById('fenceCost').textContent = '$0.00';
+            document.getElementById('demoRemovalCost').textContent = '$0.00';
+            document.getElementById('demoRemovalRow').classList.add('hidden');
+            document.getElementById('concreteCost').textContent = '$0.00';
+            document.getElementById('concreteCuttingRow').classList.add('hidden');
+            document.getElementById('customItemsRow').classList.add('hidden');
+            document.getElementById('customItemsDetailContainer').innerHTML = '';
+            document.getElementById('totalCost').textContent = '$0.00';
+            document.getElementById('gstAmount').textContent = '$0.00';
+            document.getElementById('totalCostGst').textContent = '$0.00';
+            document.getElementById('splitAmount').textContent = '$0.00';
+            document.getElementById('splitAmountGst').textContent = '$0.00';
+            document.getElementById('splitCostRow').classList.add('hidden');
+           
+            // Reset state
+            currentStep = 1;
+            quoteGenerated = false;
+            currentQuoteNumber = null;
+            pdfUrl = null;
+            quoteFileId = null;
+           
+            // Hide review panel, show navigation buttons
+            document.getElementById('quoteForm').classList.remove('hidden');
+            document.getElementById('quoteReviewPanel').classList.add('hidden');
+            document.getElementById('navigationButtons').classList.remove('hidden');
+           
+            // Update UI
+            updateProgress();
+          }
       
-      // Reset price display
-      updatePricePreview();
+          function updateProgress() {
+            document.getElementById('stepIndicator').textContent = `Step ${currentStep} of ${totalSteps}`;
+            document.getElementById('progressBar').style.width = `${(currentStep / totalSteps) * 100}%`;
+           
+            for (let i = 1; i <= totalSteps; i++) {
+              document.getElementById(`step${i}`).classList.toggle('hidden', i !== currentStep);
+            }
+           
+            document.getElementById('prevButton').classList.toggle('hidden', currentStep === 1);
+            const nextButton = document.getElementById('nextButton');
+            nextButton.textContent = currentStep === totalSteps ? (quoteGenerated ? 'Update Quote' : 'Generate Quote') : 'Next';
+          }
       
-      // Reset state
-      currentQuoteNumber = null;
-      pdfUrl = null;
-      quoteFileId = null;
+          function updatePricePreview() {
+            const length = parseFloat(document.getElementById('length').value) || 0;
+            const fenceType = document.getElementById('fenceType').value;
+            const demoRemoval = document.getElementById('demoRemoval').checked;
+            const concreteCutting = document.getElementById('concreteCutting').checked;
+            const concreteCuts = concreteCutting ? parseInt(document.getElementById('concreteCuts').value) || 0 : 0;
+            const split = document.getElementById('split').checked;
+            const customItems = getCustomItems();
+           
+            let fenceCost = 0;
+            let demoRemovalCost = 0;
+            let concreteCuttingCost = 0;
+            let customItemsCost = 0;
+            let displayCustomItemsCost = 0; // For display purposes
+           
+            // Calculate fence cost
+            if (fenceType === 'Treated Pine Fence') {
+              fenceCost = length * 110;
+            } else if (fenceType === 'Colorbond Fence') {
+              fenceCost = length * 145;
+            }
+           
+            // Calculate demolition and removal cost
+            if (demoRemoval) {
+              demoRemovalCost = length * 45;
+            }
+           
+            // Calculate concrete cutting cost
+            if (concreteCutting) {
+              concreteCuttingCost = concreteCuts * 25;
+            }
+           
+            // Calculate custom items cost
+            let customItemsDetailHTML = '';
+           
+            if (customItems.length > 0) {
+              customItems.forEach(item => {
+                if (item.description || item.amount > 0) {
+                  let itemAmount = parseFloat(item.amount) || 0;
+                  displayCustomItemsCost += itemAmount; // Add full amount for display
+                 
+                  // Handle GST-inclusive amounts for calculation
+                  if (item.includesGst) {
+                    // For calculation, extract the base amount (ex. GST)
+                    const baseAmount = itemAmount / 1.1;
+                    customItemsDetailHTML += `<div class="flex justify-between">${item.description || 'Custom item'} <span>$${itemAmount.toFixed(2)} (inc. GST)</span></div>`;
+                    customItemsCost += baseAmount;
+                  } else {
+                    customItemsDetailHTML += `<div class="flex justify-between">${item.description || 'Custom item'} <span>$${itemAmount.toFixed(2)}</span></div>`;
+                    customItemsCost += itemAmount;
+                  }
+                }
+              });
+            }
+           
+            // Calculate total (excluding GST)
+            let totalCost = fenceCost + demoRemovalCost + concreteCuttingCost + customItemsCost;
+           
+            // Apply split if selected
+            if (split) {
+              totalCost = totalCost / 2;
+            }
+           
+            // Calculate GST amount
+            const gstAmount = totalCost * 0.1;
+           
+            // Calculate total (including GST)
+            const totalIncGst = totalCost + gstAmount;
+           
+            // Calculate split costs if applicable
+            const splitCost = split ? totalCost : totalCost / 2;
+            const splitCostIncGst = splitCost * 1.1;
+           
+            // Update display
+            document.getElementById('fenceCost').textContent = formatPrice(fenceCost);
+           
+            document.getElementById('demoRemovalCost').textContent = formatPrice(demoRemovalCost);
+            document.getElementById('demoRemovalRow').classList.toggle('hidden', !demoRemoval);
+           
+            document.getElementById('concreteCost').textContent = formatPrice(concreteCuttingCost);
+            document.getElementById('concreteCuttingRow').classList.toggle('hidden', !concreteCutting);
+           
+            // Update custom items section - show the full entered amount, not GST-adjusted amount
+            document.getElementById('customItemsCost').textContent = formatPrice(displayCustomItemsCost);
+            document.getElementById('customItemsRow').classList.toggle('hidden', displayCustomItemsCost === 0);
+            document.getElementById('customItemsDetailContainer').innerHTML = customItemsDetailHTML;
+           
+            document.getElementById('totalCost').textContent = formatPrice(totalCost);
+            document.getElementById('gstAmount').textContent = formatPrice(gstAmount);
+            document.getElementById('totalCostGst').textContent = formatPrice(totalIncGst);
+            document.getElementById('splitAmount').textContent = formatPrice(splitCost);
+            document.getElementById('splitAmountGst').textContent = formatPrice(splitCostIncGst);
+            document.getElementById('splitCostRow').classList.toggle('hidden', !split);
+          }
       
-      // Show form, hide success panel
-      document.getElementById('quoteForm').classList.remove('hidden');
-      document.getElementById('successPanel').classList.add('hidden');
-    }
-
-    // Validate form inputs
-    function validateForm() {
-      const clientName = document.getElementById('clientName').value;
-      const phoneNumber = document.getElementById('phoneNumber').value;
-      const address = document.getElementById('address').value;
-      const email = document.getElementById('email').value;
-      const length = document.getElementById('length').value;
-      const fenceType = document.getElementById('fenceType').value;
+          function formatPrice(amount) {
+            return '$' + Number(amount).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+          }
       
-      if (!clientName) {
-        alert('Please enter client name');
-        return false;
-      }
+          function nextStep() {
+            if (currentStep === totalSteps) {
+              generateQuote();
+              return;
+            }
+           
+            if (validateCurrentStep()) {
+              currentStep++;
+              updateProgress();
+              updatePricePreview();
+            }
+          }
       
-      if (!phoneNumber) {
-        alert('Please enter phone number');
-        return false;
-      }
+          function prevStep() {
+            if (currentStep > 1) {
+              currentStep--;
+              updateProgress();
+              updatePricePreview();
+            }
+          }
       
-      if (!address) {
-        alert('Please enter address');
-        return false;
-      }
+          function validateCurrentStep() {
+            switch(currentStep) {
+              case 1:
+                const clientName = document.getElementById('clientName').value;
+                const phoneNumber = document.getElementById('phoneNumber').value;
+                const address = document.getElementById('address').value;
+                const email = document.getElementById('email').value;
+                if (!clientName || !phoneNumber || !address || !email) {
+                  alert('Please fill in all client details');
+                  return false;
+                }
+                if (email && !email.includes('@')) {
+                  alert('Please enter a valid email address');
+                  return false;
+                }
+                return true;
+              case 2:
+                const length = document.getElementById('length').value;
+                const fenceType = document.getElementById('fenceType').value;
+                if (!length || !fenceType) {
+                  alert('Please enter fence length and select fence type');
+                  return false;
+                }
+                return true;
+              default:
+                return true;
+            }
+          }
       
-      if (!email) {
-        alert('Please enter email address');
-        return false;
-      }
+          function generateQuote() {
+            if (isSubmitting) {
+              alert('Quote is already being generated...');
+              return;
+            }
+           
+            if (!validateCurrentStep()) {
+              return;
+            }
+           
+            isSubmitting = true;
+            showLoading(true);
+            
+            const params = getUrlParams();
+            const isUpdate = !!params.id;
       
-      if (!length) {
-        alert('Please enter fence length');
-        return false;
-      }
+            // Log data being sent to server for quote generation
+            const quoteData = {
+              clientName: document.getElementById('clientName').value,
+              phoneNumber: document.getElementById('phoneNumber').value,
+              address: document.getElementById('address').value,
+              email: document.getElementById('email').value,
+              length: document.getElementById('length').value,
+              fenceType: document.getElementById('fenceType').value,
+              additionalServices: {
+                demoRemoval: document.getElementById('demoRemoval').checked,
+                concreteCutting: document.getElementById('concreteCutting').checked,
+                concreteCuts: document.getElementById('concreteCutting').checked ? parseInt(document.getElementById('concreteCuts').value) : 0,
+                split: document.getElementById('split').checked
+              },
+              customItems: getCustomItems(),
+              quoteNumber: isUpdate ? params.id : null,
+              isNew: !isUpdate,
+              skipEmail: true // Add flag to skip automatic email sending
+            };
       
-      if (!fenceType) {
-        alert('Please select fence type');
-        return false;
-      }
-      
-      return true;
-    }
-
-    // Show/hide loading overlay
-    function showLoading(show) {
-      document.getElementById('loadingOverlay').classList.toggle('hidden', !show);
-    }
-  </script>
-</body>
-</html>
+            fetch(scriptUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'text/plain;charset=utf-8',
+              },
+              body: JSON.stringify({
+                action: 'generateQuote',
+                quoteData: quoteData
+              })
+            })
+            .then(response => response.json())
+            .then(response => {
+              isSubmitting = false;
+              showLoading(false);
+             
+              if (response.success) {
+                quoteGenerated = true;
+                currentQuoteNumber = response.quoteNumber;
+                pdfUrl = response.pdfUrl;
+                quoteFileId = response.fileId;
+               
+                // Update the review panel
+                document.getElementById('quoteNumber').textContent = `Quote #${response.quoteNumber}`;
+                document.getElementById('viewPdfLink').href = pdfUrl;
+               
+                // Hide the form navigation and show the review panel
+                document.getElementById('quoteForm').classList.add('hidden');
+                document.getElementById('navigationButtons').classList.add('hidden');
+                document.getElementById('quoteReviewPanel').classList.remove('hidden');
+              } else {
+                alert('Error: ' + response.error);
+              }
+            })
+            .catch(error => {
+              isSubmitting = false;
+              showLoading(false);
+              alert('Error: ' + error);
+            });
+          }
+         
+          function sendQuoteEmail() {
+            if (!currentQuoteNumber || !quoteFileId) {
+              alert('Quote information is missing. Please try generating the quote again.');
+              return;
+            }
+           
+            const emailBtn = document.getElementById('emailQuoteBtn');
+            emailBtn.disabled = true;
+            emailBtn.innerHTML = '<svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" /><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" /></svg> Sending...';
+           
+            const emailData = {
+              quoteNumber: currentQuoteNumber,
+              fileId: quoteFileId,
+              email: document.getElementById('email').value,
+              clientName: document.getElementById('clientName').value,
+              address: document.getElementById('address').value
+            };
+           
+            fetch(scriptUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'text/plain;charset=utf-8',
+              },
+              body: JSON.stringify({
+                action: 'sendQuoteEmail',
+                emailData: emailData
+              })
+            })
+            .then(response => response.json())
+            .then(response => {
+              if (response.success) {
+                emailBtn.innerHTML = '<svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg> Email Sent';
+                emailBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                emailBtn.classList.add('bg-gray-400', 'hover:bg-gray-400', 'cursor-not-allowed');
+                alert('Quote has been emailed to the client successfully!');
+              } else {
+                emailBtn.disabled = false;
+                emailBtn.innerHTML = '<svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" /><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" /></svg> Send to Client';
+                alert('Error sending email: ' + response.error);
+              }
+            })
+            .catch(error => {
+              emailBtn.disabled = false;
+              emailBtn.innerHTML = '<svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" /><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" /></svg> Send to Client';
+              alert('Error: ' + error);
+            });
+          }
+          
+          // Show/hide loading overlay
+          function showLoading(show) {
+            document.getElementById('loadingOverlay').classList.toggle('hidden', !show);
+          }
+        </script>
