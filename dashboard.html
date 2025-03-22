@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EMS Fencing - Dashboard</title>
+  <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+  <div class="max-w-md mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">EMS Fencing</h1>
+        <p class="text-gray-600">Dashboard</p>
+      </div>
+      <button id="newQuoteBtn" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+        New Quote
+      </button>
+    </div>
+
+    <!-- Recent Quotes -->
+    <div class="bg-white shadow overflow-hidden sm:rounded-md">
+      <div class="px-4 py-5 border-b border-gray-200">
+        <h3 class="text-lg leading-6 font-medium text-gray-900">
+          Recent Quotes
+        </h3>
+      </div>
+      <ul id="quotesList" class="divide-y divide-gray-200">
+        <li class="px-4 py-4 flex items-center text-sm text-gray-500">Loading quotes...</li>
+      </ul>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white p-5 rounded-lg shadow-lg">
+        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto"></div>
+        <p class="mt-2 text-center">Processing...</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global variables
+    let scriptUrl = 'YOUR_APPS_SCRIPT_DEPLOYMENT_URL';
+
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load recent quotes
+      loadRecentQuotes();
+      
+      // New quote button
+      document.getElementById('newQuoteBtn').addEventListener('click', function() {
+        window.location.href = 'quote.html';
+      });
+    });
+
+    // Load recent quotes from API
+    async function loadRecentQuotes() {
+      showLoading(true);
+      
+      try {
+        const response = await fetch(scriptUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8',
+          },
+          body: JSON.stringify({
+            action: 'getRecentQuotes'
+          })
+        });
+        
+        const quotes = await response.json();
+        showLoading(false);
+        
+        displayQuotes(quotes);
+      } catch (error) {
+        showLoading(false);
+        document.getElementById('quotesList').innerHTML = 
+          `<li class="px-4 py-4 text-sm text-red-500">Error loading quotes: ${error}</li>`;
+      }
+    }
+
+    // Display quotes in the list
+    function displayQuotes(quotes) {
+      const quotesList = document.getElementById('quotesList');
+      
+      if (!quotes || quotes.length === 0) {
+        quotesList.innerHTML = '<li class="px-4 py-4 text-sm text-gray-500">No quotes found.</li>';
+        return;
+      }
+      
+      quotesList.innerHTML = quotes.map(quote => `
+        <li>
+          <div class="px-4 py-4 flex items-center sm:px-6">
+            <div class="min-w-0 flex-1 sm:flex sm:items-center sm:justify-between">
+              <div>
+                <div class="flex text-sm">
+                  <p class="font-medium text-blue-600 truncate">Quote #${quote.id}</p>
+                  <p class="ml-1 flex-shrink-0 font-normal text-gray-500">
+                    ${quote.client}
+                  </p>
+                </div>
+                <div class="mt-2 flex">
+                  <div class="flex items-center text-sm text-gray-500">
+                    <p>${quote.date}</p>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-4 flex-shrink-0 sm:mt-0 sm:ml-5">
+                <div class="flex overflow-hidden">
+                  <span class="text-lg font-medium text-gray-900">${quote.amount}</span>
+                  <span class="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                    quote.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                    quote.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                    quote.status === 'Invoiced' ? 'bg-blue-100 text-blue-800' :
+                    'bg-gray-100 text-gray-800'
+                  }">
+                    ${quote.status}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="ml-5 flex">
+              <button onclick="openQuote('${quote.id}')" class="text-blue-600 hover:text-blue-900">
+                Open →
+              </button>
+            </div>
+          </div>
+        </li>
+      `).join('');
+    }
+
+    // Open a specific quote
+    async function openQuote(id) {
+      showLoading(true);
+      
+      try {
+        const response = await fetch(scriptUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8',
+          },
+          body: JSON.stringify({
+            action: 'getQuoteById',
+            id: id
+          })
+        });
+        
+        const result = await response.json();
+        showLoading(false);
+        
+        if (result.success) {
+          // Store quote data in localStorage for the quote page
+          localStorage.setItem('quoteData', JSON.stringify(result.data));
+          // Navigate to quote page
+          window.location.href = 'quote.html?id=' + id;
+        } else {
+          alert('Error opening quote: ' + result.error);
+        }
+      } catch (error) {
+        showLoading(false);
+        alert('Error: ' + error);
+      }
+    }
+
+    // Show/hide loading overlay
+    function showLoading(show) {
+      document.getElementById('loadingOverlay').classList.toggle('hidden', !show);
+    }
+  </script>
+</body>
+</html>
