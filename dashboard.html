@@ -36,6 +36,26 @@
       </div>
     </div>
 
+    <!-- Search Box - Added for search functionality -->
+    <div class="bg-white shadow mb-6 rounded-lg p-4">
+      <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4">
+        <div class="flex-grow">
+          <input type="text" id="searchInput" placeholder="Search by quote #, client name or address" class="border border-gray-300 rounded-md w-full px-4 py-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        <div class="flex space-x-2">
+          <button onclick="searchQuotes()" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+            </svg>
+            Search
+          </button>
+          <button onclick="clearSearch()" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            Clear
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Recent Quotes -->
     <div class="bg-white shadow overflow-hidden sm:rounded-lg">
       <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
@@ -46,6 +66,13 @@
       <ul id="quotesList" class="divide-y divide-gray-200">
         <li class="px-4 py-4 flex items-center text-sm text-gray-500">Loading quotes...</li>
       </ul>
+      
+      <!-- View More Button - Added for pagination -->
+      <div id="viewMoreContainer" class="mt-4 p-4 flex justify-center border-t border-gray-200">
+        <button id="viewMoreButton" onclick="loadMoreQuotes()" class="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          View More
+        </button>
+      </div>
     </div>
     
     <!-- Modal for Invoice Creation -->
@@ -148,6 +175,10 @@
   <script>
     // Global variables
     let scriptUrl = CONFIG.scriptUrl;
+    let currentPage = 1;
+    let isLoadingMore = false;
+    let noMoreQuotes = false;
+    let isSearchMode = false;
     
     // Invoice variables
     let currentInvoiceQuoteId = null;
@@ -159,6 +190,16 @@
     window.onload = function() {
       // Load recent quotes
       loadRecentQuotes();
+      
+      // Add event listener for Enter key in search input
+      const searchInput = document.getElementById('searchInput');
+      if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            searchQuotes();
+          }
+        });
+      }
     };
 
     // Load recent quotes from API
@@ -171,76 +212,249 @@
           'Content-Type': 'text/plain;charset=utf-8',
         },
         body: JSON.stringify({
-          action: 'getRecentQuotes'
+          action: 'getRecentQuotes',
+          page: currentPage
         })
       })
       .then(response => response.json())
       .then(quotes => {
         showLoading(false);
         displayQuotes(quotes);
+        updateViewMoreButton();
       })
       .catch(error => {
         showLoading(false);
         document.getElementById('quotesList').innerHTML = 
           `<li class="px-4 py-4 text-sm text-red-500">Error loading quotes: ${error}</li>`;
+        updateViewMoreButton();
       });
     }
 
     // Display quotes in the list
-    function displayQuotes(quotes) {
+    function displayQuotes(quotes, append = false) {
       const quotesList = document.getElementById('quotesList');
       
       if (!quotes || quotes.length === 0) {
-        quotesList.innerHTML = '<li class="px-4 py-4 text-sm text-gray-500">No quotes found.</li>';
+        if (!append) {
+          quotesList.innerHTML = '<li class="px-4 py-4 text-sm text-gray-500">No quotes found.</li>';
+        }
+        noMoreQuotes = true;
+        updateViewMoreButton();
         return;
       }
       
-      quotesList.innerHTML = quotes.map(quote => `
-        <li>
-          <div class="px-4 py-4 flex flex-col sm:flex-row sm:items-center">
-            <div class="min-w-0 flex-1">
-              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <div class="flex text-sm">
-                    <p class="font-medium text-blue-600 truncate">Quote #${quote.id}</p>
-                    <p class="ml-1 flex-shrink-0 font-normal text-gray-500">
-                      ${quote.client}
-                    </p>
+      let html = '';
+      
+      quotes.forEach(quote => {
+        if (quote.id === 'ERROR') {
+          html += `<li class="px-4 py-4 text-sm text-red-500">${quote.client}</li>`;
+          return;
+        }
+        
+        html += `
+          <li>
+            <div class="px-4 py-4 flex flex-col sm:flex-row sm:items-center">
+              <div class="min-w-0 flex-1">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <div class="flex text-sm">
+                      <p class="font-medium text-blue-600 truncate">Quote #${quote.id}</p>
+                      <p class="ml-1 flex-shrink-0 font-normal text-gray-500">
+                        ${quote.client}
+                      </p>
+                    </div>
+                    <div class="mt-2 flex">
+                      <div class="flex items-center text-sm text-gray-500">
+                        <p>${quote.date}</p>
+                      </div>
+                    </div>
                   </div>
-                  <div class="mt-2 flex">
-                    <div class="flex items-center text-sm text-gray-500">
-                      <p>${quote.date}</p>
+                  <div class="mt-2 sm:mt-0 flex-shrink-0">
+                    <div class="flex items-center">
+                      <span class="text-lg font-medium text-gray-900">${quote.amount}</span>
+                      <span class="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        quote.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                        quote.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                        quote.status === 'Invoiced' ? 'bg-blue-100 text-blue-800' :
+                        'bg-gray-100 text-gray-800'
+                      }">
+                        ${quote.status}
+                      </span>
                     </div>
                   </div>
                 </div>
-                <div class="mt-2 sm:mt-0 flex-shrink-0">
-                  <div class="flex items-center">
-                    <span class="text-lg font-medium text-gray-900">${quote.amount}</span>
-                    <span class="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      quote.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                      quote.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                      quote.status === 'Invoiced' ? 'bg-blue-100 text-blue-800' :
-                      'bg-gray-100 text-gray-800'
-                    }">
-                      ${quote.status}
-                    </span>
-                  </div>
-                </div>
+              </div>
+              <div class="mt-4 sm:mt-0 sm:ml-5 flex flex-wrap gap-2">
+                ${!quote.invoiced ?
+                  `<button onclick="openInvoiceModal('${quote.id}')" class="text-green-600 hover:text-green-900 font-medium py-1 px-2 border border-green-600 rounded">
+                    Invoice
+                  </button>` :
+                  ''}
+                <button onclick="openQuote('${quote.id}')" class="text-blue-600 hover:text-blue-900 py-1 px-2 border border-blue-600 rounded">
+                  Open →
+                </button>
               </div>
             </div>
-            <div class="mt-4 sm:mt-0 sm:ml-5 flex flex-wrap gap-2">
-              ${!quote.invoiced ?
-                `<button onclick="openInvoiceModal('${quote.id}')" class="text-green-600 hover:text-green-900 font-medium py-1 px-2 border border-green-600 rounded">
-                  Invoice
-                </button>` :
-                ''}
-              <button onclick="openQuote('${quote.id}')" class="text-blue-600 hover:text-blue-900 py-1 px-2 border border-blue-600 rounded">
-                Open →
-              </button>
-            </div>
-          </div>
-        </li>
-      `).join('');
+          </li>
+        `;
+      });
+      
+      if (append) {
+        quotesList.innerHTML += html;
+      } else {
+        quotesList.innerHTML = html;
+      }
+    }
+
+    // Function to load more quotes
+    function loadMoreQuotes() {
+      if (isLoadingMore || noMoreQuotes || isSearchMode) return;
+      
+      isLoadingMore = true;
+      currentPage++;
+      
+      // Update button to show loading
+      const viewMoreBtn = document.getElementById('viewMoreButton');
+      viewMoreBtn.disabled = true;
+      viewMoreBtn.innerHTML = '<span class="inline-block animate-pulse">Loading...</span>';
+      
+      fetch(scriptUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8',
+        },
+        body: JSON.stringify({
+          action: 'getRecentQuotes',
+          page: currentPage
+        })
+      })
+      .then(response => response.json())
+      .then(quotes => {
+        isLoadingMore = false;
+        
+        if (!quotes || quotes.length === 0) {
+          noMoreQuotes = true;
+          updateViewMoreButton();
+          return;
+        }
+        
+        displayQuotes(quotes, true);
+        updateViewMoreButton();
+      })
+      .catch(error => {
+        isLoadingMore = false;
+        
+        // Show error but don't clear existing quotes
+        const errorElement = document.createElement('li');
+        errorElement.className = "px-4 py-4 text-sm text-red-500";
+        errorElement.textContent = `Error loading more quotes: ${error}`;
+        document.getElementById('quotesList').appendChild(errorElement);
+        
+        updateViewMoreButton();
+      });
+    }
+    
+    // Update View More button state
+    function updateViewMoreButton() {
+      const viewMoreBtn = document.getElementById('viewMoreButton');
+      const viewMoreContainer = document.getElementById('viewMoreContainer');
+      
+      if (isSearchMode) {
+        // Hide View More button during search
+        viewMoreContainer.classList.add('hidden');
+        return;
+      }
+      
+      viewMoreContainer.classList.remove('hidden');
+      
+      if (noMoreQuotes) {
+        viewMoreBtn.disabled = true;
+        viewMoreBtn.textContent = 'No More Quotes';
+        viewMoreBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      } else {
+        viewMoreBtn.disabled = false;
+        viewMoreBtn.textContent = 'View More';
+        viewMoreBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      }
+    }
+    
+    // Search quotes function
+    function searchQuotes() {
+      const searchTerm = document.getElementById('searchInput').value.trim();
+      if (!searchTerm) {
+        // If search is empty, just reload the first page
+        currentPage = 1;
+        noMoreQuotes = false;
+        isSearchMode = false;
+        loadRecentQuotes();
+        return;
+      }
+      
+      isSearchMode = true;
+      showLoading(true);
+      
+      // Remove search results info if exists
+      const searchResults = document.getElementById('searchResults');
+      if (searchResults) {
+        searchResults.remove();
+      }
+      
+      fetch(scriptUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8',
+        },
+        body: JSON.stringify({
+          action: 'searchQuotes',
+          searchTerm: searchTerm
+        })
+      })
+      .then(response => response.json())
+      .then(quotes => {
+        showLoading(false);
+        displayQuotes(quotes);
+        
+        // Show search results count
+        const count = quotes.length;
+        const resultsText = count === 1 ? "1 result found" : `${count} results found`;
+        
+        // Add search results info
+        const quotesList = document.getElementById('quotesList');
+        if (count > 0) {
+          quotesList.insertAdjacentHTML('beforebegin', 
+            `<div id="searchResults" class="px-4 py-2 text-sm text-gray-600 border-b">
+              ${resultsText} for "${searchTerm}"
+            </div>`);
+        } else {
+          quotesList.innerHTML = 
+            `<li class="px-4 py-4 text-sm text-gray-500">No matches found for "${searchTerm}"</li>`;
+        }
+        
+        updateViewMoreButton();
+      })
+      .catch(error => {
+        showLoading(false);
+        document.getElementById('quotesList').innerHTML = 
+          `<li class="px-4 py-4 text-sm text-red-500">Error searching quotes: ${error}</li>`;
+        updateViewMoreButton();
+      });
+    }
+    
+    // Clear search function
+    function clearSearch() {
+      document.getElementById('searchInput').value = '';
+      
+      // Remove search results info if it exists
+      const searchResults = document.getElementById('searchResults');
+      if (searchResults) {
+        searchResults.remove();
+      }
+      
+      // Reset to first page
+      currentPage = 1;
+      noMoreQuotes = false;
+      isSearchMode = false;
+      loadRecentQuotes();
     }
 
     // Navigate to new quote page
@@ -306,6 +520,9 @@
           alert(result.message || 'Setup completed successfully!');
           
           // Reload quotes to reflect any changes
+          currentPage = 1;
+          noMoreQuotes = false;
+          isSearchMode = false;
           loadRecentQuotes();
         })
         .catch(error => {
@@ -341,6 +558,9 @@
               Errors: ${result.totalErrors} quotes`);
             
             // Reload quotes to show updated prices
+            currentPage = 1;
+            noMoreQuotes = false;
+            isSearchMode = false;
             loadRecentQuotes();
           } else {
             alert('Error fixing prices: ' + result.error);
@@ -397,6 +617,9 @@
     function closeInvoiceSuccessModal() {
       document.getElementById('invoiceSuccessModal').classList.add('hidden');
       // Reload quotes to reflect the new invoice status
+      currentPage = 1;
+      noMoreQuotes = false;
+      isSearchMode = false;
       loadRecentQuotes();
     }
     
