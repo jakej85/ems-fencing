@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EMS Fencing - Dashboard</title>
   <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+  <script src="config.js"></script>
 </head>
 <body class="bg-gray-100">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -146,7 +147,7 @@
 
   <script>
     // Global variables
-    let scriptUrl = 'https://script.google.com/macros/s/AKfycbyBc-yFWOhujRLDRZAQNTUYYNyjc6781H0cQEzCgsKDoM33IF7wW5B5aP9QFf20mj-z1A/exec';
+    let scriptUrl = CONFIG.scriptUrl;
     
     // Invoice variables
     let currentInvoiceQuoteId = null;
@@ -250,7 +251,7 @@
     // Function to navigate to email setup page
     function openEmailSetup() {
       // For the GitHub version, we need to redirect to the Apps Script URL with the correct parameter
-      const scriptUrl = scriptUrl || 'https://script.google.com/macros/s/AKfycbzU8IYUh__S7Fz2cA2ijYlnHPLt3vPR7bp-v0IQShJGvX2O2Zq8JfIiiFP6KrG0KXuuUQ/exec';
+      const scriptUrl = CONFIG.scriptUrl;
       window.location.href = scriptUrl + '?page=emailSetup';
     }
     
