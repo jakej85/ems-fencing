@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EMS Fencing - Quote</title>
   <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+  <script src="config.js"></script>
 </head>
 <body class="bg-gray-100">
   <div class="max-w-2xl mx-auto px-4 py-8">
@@ -247,7 +248,7 @@
     let pdfUrl = null;
     let quoteFileId = null;
     const totalSteps = 4; // Total number of steps including custom items
-    let scriptUrl = 'https://script.google.com/macros/s/AKfycbyBc-yFWOhujRLDRZAQNTUYYNyjc6781H0cQEzCgsKDoM33IF7wW5B5aP9QFf20mj-z1A/exec';
+    let scriptUrl = CONFIG.scriptUrl;
 
     // Initialize when page loads
     window.onload = function() {
