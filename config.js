@@ -1,7 +1,7 @@
 // EMS Fencing App Configuration
 const CONFIG = {
   // Google Apps Script deployment URL
-  scriptUrl: 'https://script.google.com/macros/s/AKfycbx-Lr1w4zOJnwRYK3ylXhTJzROJZ2d9iv76FoHaAxn4WtAWIqT2qKVRmd0tV5_Fv-85ZA/exec',
+  scriptUrl: 'https://script.google.com/macros/s/AKfycbwhfy32u1xikebaqEo2jcGEZvGpKSa6PiKc50rFYctRP19p5ZjmenwdZBqWfKlHU49Y3g/exec',
   
   // App version
   version: '1.0.0',
